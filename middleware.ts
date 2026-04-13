@@ -34,6 +34,9 @@ const PUBLIC_PATHS = new Set([LOGIN_PATH, "/api/login"]);
 export function middleware(request: NextRequest): NextResponse {
   const { pathname } = request.nextUrl;
 
+  // ── Auth is disabled for static exports (GitHub Pages) ──────────────────
+  if (process.env.NEXT_PUBLIC_STATIC_EXPORT === "true") return NextResponse.next();
+
   // ── Auth is disabled unless FAMILY_SITE_PASSWORD is configured ──────────
   const password = process.env.FAMILY_SITE_PASSWORD;
   if (!password) return NextResponse.next();
