@@ -8,11 +8,20 @@ export function cn(...inputs: ClassValue[]): string {
 
 // ─── Avatar fallback ──────────────────────────────────────────────────────────
 
+const BASE_PATH =
+  process.env.NODE_ENV === "production" ? "/familjearkiv" : "";
+
+/** Prepends basePath to a local /images/... path. */
+export function withBase(path: string): string {
+  if (path.startsWith("http://") || path.startsWith("https://")) return path;
+  return `${BASE_PATH}${path}`;
+}
+
 /** Returns a local default avatar based on gender. */
 export function getAvatarUrl(_id: string, gender?: Gender): string {
-  if (gender === "male") return "/images/default-male.svg";
-  if (gender === "female") return "/images/default-female.svg";
-  return "/images/default-person.svg";
+  if (gender === "male") return withBase("/images/default-male.svg");
+  if (gender === "female") return withBase("/images/default-female.svg");
+  return withBase("/images/default-person.svg");
 }
 
 // ─── Image resolution ─────────────────────────────────────────────────────────
@@ -42,8 +51,8 @@ export function resolveImageSrc(
 ): string {
   if (!imagePath) return getAvatarUrl(personId, gender);
   if (isLocalWindowsPath(imagePath)) return getAvatarUrl(personId, gender);
-  // /images/... paths are public-directory static files — always valid
-  if (imagePath.startsWith("/images/")) return imagePath;
+  // /images/... paths are public-directory static files — prepend basePath
+  if (imagePath.startsWith("/images/")) return withBase(imagePath);
   if (imagePath.startsWith("http://") || imagePath.startsWith("https://"))
     return imagePath;
   // Relative paths pass through
