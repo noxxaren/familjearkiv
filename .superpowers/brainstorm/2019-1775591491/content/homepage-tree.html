@@ -1,0 +1,121 @@
+<h2>Startsidans mittenkolumn — Släktträd</h2>
+<p class="subtitle">Hur ska trädet visas? Välj det alternativ som känns mest överskådligt.</p>
+
+<div class="cards">
+
+  <!-- Option A: Generation columns (current tree page) -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#f0f2f5; padding:12px; font-family:sans-serif;">
+      <div style="height:160px; background:#fff; border-radius:8px; padding:10px; box-shadow:0 1px 3px rgba(0,0,0,0.08); overflow:hidden;">
+        <div style="font-size:9px; color:#888; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.05em;">Generation 1</div>
+        <div style="display:flex; gap:6px; margin-bottom:8px;">
+          <div style="flex:1; height:36px; background:#EFF5EC; border-radius:6px; border-left:3px solid #B8D4B0;"></div>
+          <div style="flex:1; height:36px; background:#FBF7EC; border-radius:6px; border-left:3px solid #D9C07A;"></div>
+        </div>
+        <div style="font-size:9px; color:#888; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.05em;">Generation 2</div>
+        <div style="display:flex; gap:6px; margin-bottom:8px;">
+          <div style="flex:1; height:36px; background:#EFF5EC; border-radius:6px; border-left:3px solid #B8D4B0;"></div>
+          <div style="flex:1; height:36px; background:#EFF5EC; border-radius:6px; border-left:3px solid #B8D4B0;"></div>
+          <div style="flex:1; height:36px; background:#FBF7EC; border-radius:6px; border-left:3px solid #D9C07A;"></div>
+        </div>
+        <div style="font-size:9px; color:#888; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.05em;">Generation 3</div>
+        <div style="display:flex; gap:4px;">
+          <div style="flex:1; height:28px; background:#EFF5EC; border-radius:6px; border-left:3px solid #B8D4B0;"></div>
+          <div style="flex:1; height:28px; background:#EFF5EC; border-radius:6px; border-left:3px solid #B8D4B0;"></div>
+          <div style="flex:1; height:28px; background:#EFF5EC; border-radius:6px; border-left:3px solid #B8D4B0;"></div>
+          <div style="flex:1; height:28px; background:#FBF7EC; border-radius:6px; border-left:3px solid #D9C07A;"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Generationsrader</h3>
+      <p>Samma vy som nuvarande "Släktträd"-sida — horisontella rader per generation. Inbyggd direkt i mitten.</p>
+    </div>
+  </div>
+
+  <!-- Option B: Classic top-down tree with lines -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#f0f2f5; padding:12px; font-family:sans-serif;">
+      <div style="height:160px; background:#fff; border-radius:8px; padding:10px; box-shadow:0 1px 3px rgba(0,0,0,0.08); overflow:hidden; position:relative;">
+        <!-- Root -->
+        <div style="display:flex; justify-content:center; margin-bottom:4px;">
+          <div style="width:60px; height:26px; background:#EFF5EC; border-radius:6px; border:1px solid #B8D4B0;"></div>
+        </div>
+        <!-- Connector line down -->
+        <div style="display:flex; justify-content:center; margin-bottom:0;">
+          <div style="width:1px; height:10px; background:#B8D4B0;"></div>
+        </div>
+        <!-- Horizontal branch -->
+        <div style="display:flex; justify-content:center; margin-bottom:0;">
+          <div style="width:120px; height:1px; background:#B8D4B0;"></div>
+        </div>
+        <!-- Two branches down -->
+        <div style="display:flex; justify-content:center; gap:100px; margin-bottom:4px;">
+          <div style="width:1px; height:10px; background:#B8D4B0;"></div>
+          <div style="width:1px; height:10px; background:#D9C07A;"></div>
+        </div>
+        <!-- Level 2 -->
+        <div style="display:flex; justify-content:space-around; margin-bottom:4px;">
+          <div style="width:48px; height:22px; background:#EFF5EC; border-radius:6px; border:1px solid #B8D4B0;"></div>
+          <div style="width:48px; height:22px; background:#FBF7EC; border-radius:6px; border:1px solid #D9C07A;"></div>
+        </div>
+        <!-- More connectors -->
+        <div style="display:flex; justify-content:space-around; margin-bottom:4px;">
+          <div style="width:1px; height:8px; background:#B8D4B0;"></div>
+          <div style="width:1px; height:8px; background:#D9C07A;"></div>
+        </div>
+        <!-- Level 3 -->
+        <div style="display:flex; justify-content:space-around; gap:4px; padding:0 8px;">
+          <div style="flex:1; height:18px; background:#EFF5EC; border-radius:4px; border:1px solid #B8D4B0;"></div>
+          <div style="flex:1; height:18px; background:#EFF5EC; border-radius:4px; border:1px solid #B8D4B0;"></div>
+          <div style="flex:1; height:18px; background:#FBF7EC; border-radius:4px; border:1px solid #D9C07A;"></div>
+          <div style="flex:1; height:18px; background:#FBF7EC; border-radius:4px; border:1px solid #D9C07A;"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Klassiskt träd (uppifrån–ner)</h3>
+      <p>Rötterna högst upp, linjer som grenar nedåt per generation. Klickbara noder. Scrollbar om det blir stort.</p>
+    </div>
+  </div>
+
+  <!-- Option C: Compact ancestor fan centered on viewer -->
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#f0f2f5; padding:12px; font-family:sans-serif;">
+      <div style="height:160px; background:#fff; border-radius:8px; padding:10px; box-shadow:0 1px 3px rgba(0,0,0,0.08); overflow:hidden; display:flex; flex-direction:column; align-items:center; justify-content:flex-end;">
+        <!-- Bottom level: viewer -->
+        <div style="width:52px; height:28px; background:#1E3A1E; border-radius:6px; margin-bottom:4px; display:flex; align-items:center; justify-content:center;">
+          <span style="color:white; font-size:8px; font-weight:600;">Du</span>
+        </div>
+        <div style="width:1px; height:8px; background:#888;"></div>
+        <!-- Parents row -->
+        <div style="display:flex; gap:40px; margin-bottom:0;">
+          <div style="width:1px; height:8px; background:#888;"></div>
+          <div style="width:1px; height:8px; background:#888;"></div>
+        </div>
+        <div style="display:flex; gap:8px; margin-bottom:4px;">
+          <div style="width:44px; height:22px; background:#EFF5EC; border-radius:5px; border:1px solid #B8D4B0;"></div>
+          <div style="width:44px; height:22px; background:#FBF7EC; border-radius:5px; border:1px solid #D9C07A;"></div>
+        </div>
+        <!-- Grandparents row -->
+        <div style="display:flex; gap:4px; margin-bottom:0;">
+          <div style="width:1px; height:6px; background:#B8D4B0; margin:0 14px;"></div>
+          <div style="width:1px; height:6px; background:#B8D4B0; margin:0 14px;"></div>
+          <div style="width:1px; height:6px; background:#D9C07A; margin:0 14px;"></div>
+          <div style="width:1px; height:6px; background:#D9C07A; margin:0 14px;"></div>
+        </div>
+        <div style="display:flex; gap:4px;">
+          <div style="width:30px; height:18px; background:#EFF5EC; border-radius:4px; border:1px solid #B8D4B0;"></div>
+          <div style="width:30px; height:18px; background:#EFF5EC; border-radius:4px; border:1px solid #B8D4B0;"></div>
+          <div style="width:30px; height:18px; background:#FBF7EC; border-radius:4px; border:1px solid #D9C07A;"></div>
+          <div style="width:30px; height:18px; background:#FBF7EC; border-radius:4px; border:1px solid #D9C07A;"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Träd nedifrån (du i centrum)</h3>
+      <p>Du (eller vald person) längst ner. Förfäder grenar uppåt. Visar relationen till dig direkt.</p>
+    </div>
+  </div>
+
+</div>

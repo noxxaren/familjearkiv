@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <!-- Background circle -->
+  <circle cx="50" cy="50" r="50" fill="#FBF7EC"/>
+  <!-- Hair (slightly wider, longer) -->
+  <ellipse cx="50" cy="33" rx="19" ry="13" fill="#8B6A10"/>
+  <ellipse cx="50" cy="44" rx="19" ry="6" fill="#8B6A10"/>
+  <!-- Head -->
+  <circle cx="50" cy="36" r="14" fill="#C9971E"/>
+  <!-- Body / shoulders (narrower, rounded) -->
+  <path d="M22 90 C22 68 34 62 50 62 C66 62 78 68 78 90" fill="#8B6A10"/>
+</svg>

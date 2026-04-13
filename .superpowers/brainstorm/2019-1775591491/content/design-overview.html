@@ -1,0 +1,197 @@
+<h2>Designöversikt — Facebook-layout för Lindoffs Familjearkiv</h2>
+<p class="subtitle">Så här ser sidorna ut med det nya upplägget. Scrolla ner för att se båda vyer.</p>
+
+<!-- ===== HOMEPAGE ===== -->
+<div class="section">
+  <h3>Startsida — Tre kolumner</h3>
+
+  <div class="mockup">
+    <div class="mockup-header">Startsida (desktop)</div>
+    <div class="mockup-body" style="background:#f0f2f5; padding:12px; font-family:sans-serif; min-height:320px;">
+
+      <!-- Top nav bar -->
+      <div style="background:#1E3A1E; border-radius:8px; height:40px; display:flex; align-items:center; padding:0 16px; margin-bottom:10px; gap:12px;">
+        <span style="color:rgba(255,255,255,0.9); font-weight:700; font-size:13px;">🌲 Lindoffs</span>
+        <div style="flex:1; height:24px; background:rgba(255,255,255,0.12); border-radius:20px; display:flex; align-items:center; padding:0 10px;">
+          <span style="color:rgba(255,255,255,0.4); font-size:11px;">Sök person...</span>
+        </div>
+        <div style="width:28px; height:28px; border-radius:50%; background:rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center;">
+          <span style="color:white; font-size:11px;">MR</span>
+        </div>
+      </div>
+
+      <!-- Three columns -->
+      <div style="display:grid; grid-template-columns:200px 1fr 180px; gap:10px;">
+
+        <!-- LEFT sidebar -->
+        <div style="background:#fff; border-radius:10px; padding:12px; box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+          <!-- Viewer card -->
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px; padding-bottom:12px; border-bottom:1px solid #eee;">
+            <div style="width:36px; height:36px; border-radius:50%; background:#1E3A1E; flex-shrink:0;"></div>
+            <div>
+              <div style="font-size:11px; font-weight:600; color:#1a1714;">Matti Rosén</div>
+              <div style="font-size:10px; color:#888; margin-top:1px;">Du ser som dig</div>
+            </div>
+          </div>
+          <!-- Nav links -->
+          <div style="display:flex; flex-direction:column; gap:2px;">
+            <div style="display:flex; align-items:center; gap:8px; padding:7px 8px; background:#EFF5EC; border-radius:8px;">
+              <div style="width:14px; height:14px; border-radius:3px; background:#1E3A1E;"></div>
+              <span style="font-size:11px; font-weight:600; color:#1E3A1E;">Hem</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; padding:7px 8px; border-radius:8px;">
+              <div style="width:14px; height:14px; border-radius:3px; background:#ccc;"></div>
+              <span style="font-size:11px; color:#555;">Släktträd</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; padding:7px 8px; border-radius:8px;">
+              <div style="width:14px; height:14px; border-radius:3px; background:#ccc;"></div>
+              <span style="font-size:11px; color:#555;">Alla personer</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- CENTER feed -->
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <!-- Person card 1 -->
+          <div style="background:#fff; border-radius:10px; padding:14px; box-shadow:0 1px 3px rgba(0,0,0,0.08); display:flex; gap:10px; align-items:center; border-left:3px solid #B8D4B0;">
+            <div style="width:48px; height:48px; border-radius:50%; background:#EFF5EC; flex-shrink:0; border:2px solid #B8D4B0;"></div>
+            <div style="flex:1;">
+              <div style="font-size:12px; font-weight:700; color:#1a1714;">Jan Lindoff</div>
+              <div style="font-size:10px; color:#8B6A10; margin-top:1px;">1944 – 2019 · Din farfar</div>
+              <div style="font-size:10px; color:#888; margin-top:3px;">Köpte Kyrkheddinge 8:36 år 1977...</div>
+            </div>
+          </div>
+          <!-- Person card 2 -->
+          <div style="background:#fff; border-radius:10px; padding:14px; box-shadow:0 1px 3px rgba(0,0,0,0.08); display:flex; gap:10px; align-items:center; border-left:3px solid #D9C07A;">
+            <div style="width:48px; height:48px; border-radius:50%; background:#FBF7EC; flex-shrink:0; border:2px solid #D9C07A;"></div>
+            <div style="flex:1;">
+              <div style="font-size:12px; font-weight:700; color:#1a1714;">Karin Lindoff</div>
+              <div style="font-size:10px; color:#8B6A10; margin-top:1px;">1946 – · Din farmor</div>
+              <div style="font-size:10px; color:#888; margin-top:3px;">Uppvuxen i Malmö, gift 1968...</div>
+            </div>
+          </div>
+          <!-- Person card 3 -->
+          <div style="background:#fff; border-radius:10px; padding:14px; box-shadow:0 1px 3px rgba(0,0,0,0.08); display:flex; gap:10px; align-items:center; border-left:3px solid #B8D4B0;">
+            <div style="width:48px; height:48px; border-radius:50%; background:#EFF5EC; flex-shrink:0; border:2px solid #B8D4B0;"></div>
+            <div style="flex:1;">
+              <div style="font-size:12px; font-weight:700; color:#1a1714;">Jöns Andersson Lindoff</div>
+              <div style="font-size:10px; color:#8B6A10; margin-top:1px;">1875 – 1942 · Dragon, förfader</div>
+              <div style="font-size:10px; color:#888; margin-top:3px;">Köpte samma gård 1936...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT sidebar -->
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <!-- Stats -->
+          <div style="background:#fff; border-radius:10px; padding:12px; box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+            <div style="font-size:11px; font-weight:700; color:#1a1714; margin-bottom:8px; text-transform:uppercase; letter-spacing:0.05em;">Familjen</div>
+            <div style="display:flex; flex-direction:column; gap:5px;">
+              <div style="display:flex; justify-content:space-between; font-size:10px; color:#555;">
+                <span>Personer</span><span style="font-weight:600;">22</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:10px; color:#555;">
+                <span>Generationer</span><span style="font-weight:600;">4</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:10px; color:#555;">
+                <span>År historia</span><span style="font-weight:600;">200+</span>
+              </div>
+            </div>
+          </div>
+          <!-- Key persons -->
+          <div style="background:#fff; border-radius:10px; padding:12px; box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+            <div style="font-size:11px; font-weight:700; color:#1a1714; margin-bottom:8px; text-transform:uppercase; letter-spacing:0.05em;">Kända personer</div>
+            <div style="display:flex; flex-direction:column; gap:6px;">
+              <div style="display:flex; align-items:center; gap:6px;">
+                <div style="width:22px; height:22px; border-radius:50%; background:#EFF5EC; border:1px solid #B8D4B0;"></div>
+                <span style="font-size:10px; color:#1E3A1E; font-weight:500;">Jan Lindoff</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:6px;">
+                <div style="width:22px; height:22px; border-radius:50%; background:#FBF7EC; border:1px solid #D9C07A;"></div>
+                <span style="font-size:10px; color:#8B6A10; font-weight:500;">Karin Lindoff</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:6px;">
+                <div style="width:22px; height:22px; border-radius:50%; background:#EFF5EC; border:1px solid #B8D4B0;"></div>
+                <span style="font-size:10px; color:#1E3A1E; font-weight:500;">Jöns A. Lindoff</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PERSON PROFILE ===== -->
+<div class="section">
+  <h3>Personprofil — Facebook-stil</h3>
+
+  <div class="mockup">
+    <div class="mockup-header">Profilsida (t.ex. Jan Lindoff)</div>
+    <div class="mockup-body" style="background:#f0f2f5; padding:12px; font-family:sans-serif;">
+
+      <!-- Top nav bar -->
+      <div style="background:#1E3A1E; border-radius:8px; height:36px; display:flex; align-items:center; padding:0 16px; margin-bottom:10px; gap:12px;">
+        <span style="color:rgba(255,255,255,0.9); font-weight:700; font-size:12px;">🌲 Lindoffs</span>
+        <div style="flex:1; height:20px; background:rgba(255,255,255,0.12); border-radius:20px;"></div>
+      </div>
+
+      <!-- Three columns: left nav / profile center / right -->
+      <div style="display:grid; grid-template-columns:160px 1fr 150px; gap:8px;">
+
+        <!-- Left nav (collapsed) -->
+        <div style="background:#fff; border-radius:10px; padding:10px; box-shadow:0 1px 3px rgba(0,0,0,0.08); height:fit-content;">
+          <div style="display:flex; align-items:center; gap:6px; margin-bottom:10px; padding-bottom:10px; border-bottom:1px solid #eee;">
+            <div style="width:28px; height:28px; border-radius:50%; background:#1E3A1E;"></div>
+            <div style="font-size:10px; font-weight:600; color:#1a1714;">Matti</div>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:4px;">
+            <div style="height:8px; background:#eee; border-radius:2px;"></div>
+            <div style="height:8px; background:#EFF5EC; border-radius:2px;"></div>
+            <div style="height:8px; background:#eee; border-radius:2px;"></div>
+          </div>
+        </div>
+
+        <!-- Profile center -->
+        <div style="background:#fff; border-radius:10px; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+          <!-- Cover photo -->
+          <div style="height:80px; background:linear-gradient(135deg, #1E3A1E 0%, #3D7034 60%, #8B6A10 100%); position:relative;">
+            <!-- Avatar overlapping -->
+            <div style="position:absolute; bottom:-20px; left:16px; width:48px; height:48px; border-radius:50%; background:#EFF5EC; border:3px solid #fff; box-shadow:0 2px 6px rgba(0,0,0,0.15);"></div>
+          </div>
+          <!-- Profile header -->
+          <div style="padding:10px 14px 10px 72px; border-bottom:1px solid #eee;">
+            <div style="font-size:13px; font-weight:700; color:#1a1714;">Jan Lindoff</div>
+            <div style="font-size:10px; color:#8B6A10; margin-top:1px;">1944 – 2019 · Jans sida</div>
+          </div>
+          <!-- Tabs -->
+          <div style="display:flex; gap:0; border-bottom:1px solid #eee; padding:0 8px;">
+            <div style="padding:8px 10px; font-size:10px; font-weight:600; color:#1E3A1E; border-bottom:2px solid #1E3A1E;">Berättelse</div>
+            <div style="padding:8px 10px; font-size:10px; color:#888;">Bilder</div>
+            <div style="padding:8px 10px; font-size:10px; color:#888;">Tidslinje</div>
+            <div style="padding:8px 10px; font-size:10px; color:#888;">Släktingar</div>
+          </div>
+          <!-- Content area -->
+          <div style="padding:12px 14px;">
+            <div style="height:8px; background:#eee; border-radius:2px; width:85%; margin-bottom:5px;"></div>
+            <div style="height:8px; background:#eee; border-radius:2px; width:70%; margin-bottom:5px;"></div>
+            <div style="height:8px; background:#eee; border-radius:2px; width:90%;"></div>
+          </div>
+        </div>
+
+        <!-- Right sidebar -->
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <div style="background:#fff; border-radius:10px; padding:10px; box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+            <div style="font-size:10px; font-weight:700; color:#1a1714; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.05em;">Familjen</div>
+            <div style="height:7px; background:#eee; border-radius:2px; margin-bottom:4px;"></div>
+            <div style="height:7px; background:#eee; border-radius:2px; width:80%;"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<p class="subtitle" style="margin-top:16px;">Ser det ut som du tänkt dig? Godkänn eller berätta vad du vill ändra.</p>

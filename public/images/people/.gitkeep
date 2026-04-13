@@ -1,0 +1,13 @@
+# Lägg familjefoton här
+# Namnge filerna efter person-id, t.ex:
+#
+#   jan.jpg
+#   karin.jpg
+#   jan-jons-andersson-lindoff.jpg
+#   karin-maj-britt-hansson.jpg
+#   karin-vilhelmina-nilsson.jpg
+#   karin-hans-larsson.jpg
+#   jan-jons-bengtsson.jpg
+#
+# Stödda format: .jpg .jpeg .png .webp
+# Rekommenderad storlek: 400×400 px (kvadratisk) för profilbilder

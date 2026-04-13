@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Person | Familjearkivet Lindoff</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="page-shell">
+    <header class="person-hero panel">
+      <a class="back-link" href="index.html">Tillbaka till släktträdet</a>
+      <div class="person-hero-grid">
+        <div class="portrait-card">
+        <div id="portrait-placeholder" class="portrait-placeholder">
+          <span>Bild</span>
+        </div>
+        </div>
+
+        <div class="person-summary">
+          <p id="person-side" class="eyebrow"></p>
+          <h1 id="person-name"></h1>
+          <p id="person-meta" class="hero-copy"></p>
+          <p id="person-presentation" class="hero-copy"></p>
+        </div>
+      </div>
+    </header>
+
+    <main class="person-layout">
+      <section class="panel">
+        <div class="section-heading">
+          <div>
+            <p class="kicker">Presentation</p>
+            <h2>Om Personen</h2>
+          </div>
+        </div>
+        <p id="person-description" class="person-body"></p>
+      </section>
+
+      <section class="panel">
+        <div class="section-heading">
+          <div>
+            <p class="kicker">Bilder</p>
+            <h2>Galleri</h2>
+          </div>
+        </div>
+        <div id="person-gallery" class="gallery-grid"></div>
+      </section>
+
+      <section class="panel">
+        <div class="section-heading">
+          <div>
+            <p class="kicker">Familj</p>
+            <h2>Relationer</h2>
+          </div>
+        </div>
+        <div id="person-family" class="family-sections"></div>
+      </section>
+
+      <section class="panel wide-panel">
+        <div class="section-heading">
+          <div>
+            <p class="kicker">Dokumentation</p>
+            <h2>Filer Och Spår I Arkivet</h2>
+          </div>
+        </div>
+        <div id="person-documents" class="document-list"></div>
+      </section>
+
+      <section class="panel wide-panel">
+        <div class="section-heading">
+          <div>
+            <p class="kicker">Historia</p>
+            <h2>Personens Berättelse</h2>
+          </div>
+        </div>
+        <div id="person-story" class="story-grid"></div>
+      </section>
+    </main>
+  </div>
+
+  <script src="family-data.js"></script>
+  <script src="person.js"></script>
+</body>
+</html>
