@@ -1,374 +1,337 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
-import Image from "next/image";
-import { motion } from "framer-motion";
-import { MapPin } from "lucide-react";
-import { resolveImageSrc, getAvatarUrl, formatLifespan } from "@/lib/utils";
-import { getAvailableGenerations, getPersonsByGeneration } from "@/lib/data";
-import type { Person } from "@/types/person";
+import { useState, useMemo, useCallback } from "react";
+import {
+  ReactFlow,
+  Background,
+  Controls,
+  MiniMap,
+  BackgroundVariant,
+  type NodeTypes,
+  type Node,
+  type Edge,
+} from "@xyflow/react";
 
-// ─── Generation metadata ───────────────────────────────────────────────────
+import { buildFullTree, getLivingPersons } from "@/lib/tree";
+import { TreePersonNode } from "./TreePersonNode";
+import { TreeCoupleNode } from "./TreeCoupleNode";
+import { PersonPicker } from "./PersonPicker";
 
-const GEN_META: Record<number, { label: string; period: string }> = {
-  "-1": { label: "Urfäder",            period: "ca 1820–1905" },
-   0:   { label: "Äldre generation",   period: "ca 1858–1957" },
-   1:   { label: "Mor-/farföräldrar",  period: "ca 1896–2022" },
-   2:   { label: "Föräldrar",          period: "1956–" },
-   3:   { label: "Barn",               period: "1981–" },
-   4:   { label: "Barnbarn",           period: "2012–" },
+// ─── React Flow node type registry ────────────────────────────────────────────
+
+const nodeTypes: NodeTypes = {
+  person: TreePersonNode as never,
+  couple: TreeCoupleNode as never,
 };
 
-// ─── Single person card ────────────────────────────────────────────────────
+// ─── Generation swim-lane backgrounds ─────────────────────────────────────────
 
-function PersonCard({ person, index = 0 }: { person: Person; index?: number }) {
-  const isJan   = person.side === "Jans sida";
-  const isKarin = person.side === "Karins sida";
-  const lifespan = formatLifespan(person.birthYear, person.deathYear);
-  const [imgSrc, setImgSrc] = useState(() =>
-    resolveImageSrc(person.image, person.id, person.gender)
-  );
+const GEN_META: Record<number, { label: string; color: string }> = {
+  "-1": { label: "Urfäder  ·  ca 1820–1905",   color: "rgba(100,90,80,0.04)" },
+   0:   { label: "Äldre generation  ·  ca 1858–1957", color: "rgba(90,110,80,0.04)" },
+   1:   { label: "Mor-/farföräldrar  ·  ca 1896–2022", color: "rgba(80,120,90,0.04)" },
+   2:   { label: "Föräldrar  ·  1956–",          color: "rgba(74,124,89,0.06)" },
+   3:   { label: "Barn  ·  1981–",               color: "rgba(154,125,46,0.05)" },
+   4:   { label: "Barnbarn  ·  2012–",           color: "rgba(154,125,46,0.07)" },
+};
 
-  const accentColor = isJan ? "#4a7c59" : isKarin ? "#9a7d2e" : "#6b6358";
-  const bgColor     = isJan ? "#f0f5ed" : isKarin ? "#faf6e8" : "#f5f2ee";
-  const borderColor = isJan ? "#b8d4b0" : isKarin ? "#d9c07a" : "#ddd8d2";
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.05, duration: 0.35, ease: "easeOut" }}
-    >
-      <Link href={`/people/${person.id}`}>
-        <div
-          className="group flex items-center gap-2.5 rounded-xl p-2.5 transition-all duration-200 hover:-translate-y-0.5 cursor-pointer"
-          style={{
-            background: bgColor,
-            border: `1px solid ${borderColor}`,
-            boxShadow: `0 1px 3px rgba(0,0,0,0.06), 0 0 0 0 ${accentColor}`,
-          }}
-          onMouseEnter={(e) => {
-            (e.currentTarget as HTMLDivElement).style.boxShadow =
-              `0 4px 12px rgba(0,0,0,0.10), 0 0 0 1.5px ${accentColor}40`;
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLDivElement).style.boxShadow =
-              `0 1px 3px rgba(0,0,0,0.06), 0 0 0 0 ${accentColor}`;
-          }}
-        >
-          {/* Avatar */}
-          <div
-            className="flex-shrink-0 rounded-full overflow-hidden"
-            style={{
-              width: 38, height: 38,
-              border: `2px solid ${borderColor}`,
-              boxShadow: `inset 0 0 0 1px rgba(0,0,0,0.06)`,
-            }}
-          >
-            <Image
-              src={imgSrc}
-              alt={person.fullName}
-              width={38}
-              height={38}
-              className="w-full h-full object-cover"
-              onError={() => setImgSrc(getAvatarUrl(person.id, person.gender))}
-            />
-          </div>
-
-          {/* Text */}
-          <div className="flex-1 min-w-0">
-            <p
-              className="font-serif text-sm font-semibold leading-tight truncate transition-colors"
-              style={{ color: accentColor }}
-            >
-              {person.fullName}
-            </p>
-            {lifespan && (
-              <p className="text-xs mt-0.5 truncate" style={{ color: "#9a9590" }}>
-                {lifespan}
-              </p>
-            )}
-            {person.birthPlace && (
-              <div className="flex items-center gap-1 mt-0.5">
-                <MapPin className="w-2.5 h-2.5 flex-shrink-0" style={{ color: "#b5b0aa" }} />
-                <p className="text-xs truncate" style={{ color: "#b5b0aa" }}>
-                  {person.birthPlace}
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-      </Link>
-    </motion.div>
-  );
-}
-
-// ─── Generation row ────────────────────────────────────────────────────────
-
-function GenerationRow({
-  generation,
-  persons,
-  isLast,
-}: {
-  generation: number;
-  persons: Person[];
-  isLast: boolean;
-}) {
-  const meta   = GEN_META[generation] ?? { label: `Generation ${generation}`, period: "" };
-  const janSide   = persons.filter(p => p.side === "Jans sida");
-  const karinSide = persons.filter(p => p.side === "Karins sida");
-
-  // For the merge generations (2+), center the cards
-  const isMerged = generation >= 2;
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: "easeOut" }}
-    >
-      {/* Generation header */}
-      <div className="flex items-center gap-4 mb-4">
-        <div className="flex-1 h-px" style={{ background: "linear-gradient(to right, transparent, #d8d3cc)" }} />
-        <div className="flex-shrink-0 text-center">
-          <p className="font-serif text-sm font-semibold tracking-wide" style={{ color: "#5c5650" }}>
-            {meta.label}
-          </p>
-          <p className="text-xs mt-0.5" style={{ color: "#a09a94" }}>{meta.period}</p>
-        </div>
-        <div className="flex-1 h-px" style={{ background: "linear-gradient(to left, transparent, #d8d3cc)" }} />
-      </div>
-
-      {isMerged ? (
-        /* Merged layout — centered cards */
-        <div className="flex flex-wrap justify-center gap-3">
-          {persons.map((p, i) => (
-            <div key={p.id} className="w-full sm:w-64">
-              <PersonCard person={p} index={i} />
-            </div>
-          ))}
-        </div>
-      ) : (
-        /* Split layout — Jans sida left, Karins sida right */
-        <div className="grid grid-cols-2 gap-4">
-          {/* Left: Jans sida */}
-          <div className="space-y-2">
-            <p
-              className="text-xs font-medium tracking-[0.12em] uppercase mb-2 pl-1"
-              style={{ color: "#4a7c59" }}
-            >
-              Jans sida
-            </p>
-            {janSide.length > 0 ? (
-              janSide.map((p, i) => <PersonCard key={p.id} person={p} index={i} />)
-            ) : (
-              <div
-                className="rounded-xl p-3 text-xs italic"
-                style={{ background: "#f5f8f4", color: "#b0bdb0", border: "1px dashed #cdd8cc" }}
-              >
-                Inga kända förfäder
-              </div>
-            )}
-          </div>
-
-          {/* Right: Karins sida */}
-          <div className="space-y-2">
-            <p
-              className="text-xs font-medium tracking-[0.12em] uppercase mb-2 pl-1"
-              style={{ color: "#9a7d2e" }}
-            >
-              Karins sida
-            </p>
-            {karinSide.length > 0 ? (
-              karinSide.map((p, i) => <PersonCard key={p.id} person={p} index={i} />)
-            ) : (
-              <div
-                className="rounded-xl p-3 text-xs italic"
-                style={{ background: "#fdf9ee", color: "#c0b878", border: "1px dashed #d9c07a" }}
-              >
-                Inga kända förfäder
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Connector arrow between generations */}
-      {!isLast && (
-        <div className="flex justify-center mt-5 mb-1">
-          <div className="flex flex-col items-center gap-0.5">
-            <div className="w-px h-5" style={{ background: "#d0ccc6" }} />
-            <svg width="10" height="6" viewBox="0 0 10 6" fill="none">
-              <path d="M5 6L0 0h10L5 6z" fill="#c8c4be" />
-            </svg>
-          </div>
-        </div>
-      )}
-    </motion.div>
-  );
-}
-
-// ─── Main component ────────────────────────────────────────────────────────
+// ─── Main component ────────────────────────────────────────────────────────────
 
 export function FamilyTreeView() {
-  const [filter, setFilter] = useState<"all" | "Jans sida" | "Karins sida">("all");
+  const [rootPerson, setRootPerson] = useState<string | null>(null);
 
-  // All generations present in data, sorted oldest → newest
-  const allGenerations = getAvailableGenerations();
+  const livingPersons = useMemo(() => getLivingPersons(), []);
 
-  const filteredPersonsForGen = (gen: number): Person[] => {
-    const persons = getPersonsByGeneration(gen);
-    if (filter === "all") return persons;
-    return persons.filter(p => p.side === filter || (p.side !== "Jans sida" && p.side !== "Karins sida"));
-  };
-
-  const totalCount = allGenerations.reduce(
-    (sum, g) => sum + getPersonsByGeneration(g).length, 0
+  const { nodes: rawNodes, edges: rawEdges } = useMemo(
+    () => buildFullTree(rootPerson ?? undefined),
+    [rootPerson]
   );
 
+  // Cast to React Flow types
+  const nodes = rawNodes as unknown as Node[];
+  const edges = rawEdges as unknown as Edge[];
+
+  const handlePickerSelect = useCallback((id: string | null) => {
+    setRootPerson(id);
+  }, []);
+
   return (
-    <div className="min-h-screen" style={{ background: "#faf8f5" }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        height: "100vh",
+        background: "#faf8f5",
+        overflow: "hidden",
+      }}
+    >
+      {/* ── Page header ──────────────────────────────────────── */}
+      <div
+        style={{
+          background: "#fff",
+          borderBottom: "1px solid #e8e4de",
+          padding: "20px 24px 0",
+          flexShrink: 0,
+        }}
+      >
+        <p
+          style={{
+            fontSize: 10,
+            fontWeight: 600,
+            letterSpacing: "0.18em",
+            textTransform: "uppercase",
+            color: "#9a9590",
+            margin: "0 0 4px",
+          }}
+        >
+          Familjearkivet Lindoff
+        </p>
+        <h1
+          style={{
+            fontFamily: "Georgia, 'Times New Roman', serif",
+            fontSize: 28,
+            fontWeight: 700,
+            color: "#2c2925",
+            letterSpacing: "-0.02em",
+            margin: "0 0 4px",
+          }}
+        >
+          Släktträd
+        </h1>
+        <p
+          style={{
+            fontSize: 12,
+            color: "#7a7570",
+            margin: "0 0 16px",
+          }}
+        >
+          6 generationer · från 1820-talets Skåne till nutid · Dra för att panorera, scrolla för att zooma
+        </p>
 
-      {/* ── Page header ─────────────────────────────────────── */}
-      <div style={{ background: "#fff", borderBottom: "1px solid #e8e4de" }}>
-        <div className="container mx-auto px-4 max-w-4xl py-10">
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45 }}
-          >
-            <p
-              className="text-xs font-medium tracking-[0.18em] uppercase mb-2"
-              style={{ color: "#9a9590" }}
-            >
-              Familjearkivet Lindoff
-            </p>
-            <h1
-              className="font-serif text-3xl md:text-4xl font-bold mb-2"
-              style={{ color: "#2c2925", letterSpacing: "-0.02em" }}
-            >
-              Släktträd
-            </h1>
-            <p className="text-sm mb-6" style={{ color: "#7a7570" }}>
-              {allGenerations.length} generationer · {totalCount} personer · från 1820-talets
-              Skåne till nutid
-            </p>
-
-            {/* Filter pills */}
-            <div className="flex items-center gap-2">
-              {(["all", "Jans sida", "Karins sida"] as const).map((side) => (
-                <button
-                  key={side}
-                  onClick={() => setFilter(side)}
-                  className="px-4 py-1.5 rounded-full text-xs font-medium transition-all duration-200"
-                  style={{
-                    background:
-                      filter === side
-                        ? side === "Jans sida"
-                          ? "#4a7c59"
-                          : side === "Karins sida"
-                          ? "#9a7d2e"
-                          : "#2c2925"
-                        : "#f0ece6",
-                    color: filter === side ? "#fff" : "#6b6358",
-                    border: `1px solid ${
-                      filter === side
-                        ? "transparent"
-                        : "#ddd8d2"
-                    }`,
-                  }}
-                >
-                  {side === "all" ? "Alla" : side}
-                </button>
-              ))}
-
-              {/* Legend */}
-              <div className="ml-auto flex items-center gap-4">
-                <div className="flex items-center gap-1.5">
-                  <div className="w-2.5 h-2.5 rounded-full" style={{ background: "#b8d4b0", border: "1px solid #4a7c59" }} />
-                  <span className="text-xs" style={{ color: "#9a9590" }}>Jans sida</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <div className="w-2.5 h-2.5 rounded-full" style={{ background: "#e8d88a", border: "1px solid #9a7d2e" }} />
-                  <span className="text-xs" style={{ color: "#9a9590" }}>Karins sida</span>
-                </div>
-              </div>
-            </div>
-          </motion.div>
+        {/* Legend */}
+        <div style={{ display: "flex", gap: 20, paddingBottom: 14 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <div
+              style={{
+                width: 10,
+                height: 10,
+                borderRadius: "50%",
+                background: "#b8d4b0",
+                border: "1px solid #4a7c59",
+              }}
+            />
+            <span style={{ fontSize: 11, color: "#9a9590" }}>Jans sida</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <div
+              style={{
+                width: 10,
+                height: 10,
+                borderRadius: "50%",
+                background: "#e8d88a",
+                border: "1px solid #9a7d2e",
+              }}
+            />
+            <span style={{ fontSize: 11, color: "#9a9590" }}>Karins sida</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <div
+              style={{
+                width: 24,
+                height: 1.5,
+                background: "#c8bfaf",
+                borderTop: "1.5px dashed #c8bfaf",
+              }}
+            />
+            <span style={{ fontSize: 11, color: "#9a9590" }}>Partner</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <div
+              style={{
+                width: 24,
+                height: 2,
+                background: "#4a7c5980",
+              }}
+            />
+            <span style={{ fontSize: 11, color: "#9a9590" }}>Förälder–barn</span>
+          </div>
         </div>
       </div>
 
-      {/* ── Tree content — oldest (top) → newest (bottom) ── */}
-      <div className="container mx-auto px-4 max-w-4xl py-10 space-y-8">
+      {/* ── Person picker ─────────────────────────────────────── */}
+      <PersonPicker
+        persons={livingPersons}
+        selected={rootPerson}
+        onSelect={handlePickerSelect}
+      />
 
-        {/* Decorative top label */}
-        <div className="flex items-center justify-center mb-2">
-          <div
-            className="px-4 py-1.5 rounded-full text-xs font-medium tracking-wide"
+      {/* ── React Flow canvas ─────────────────────────────────── */}
+      <div style={{ flex: 1, position: "relative" }}>
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          nodeTypes={nodeTypes}
+          fitView
+          fitViewOptions={{ padding: 0.15 }}
+          minZoom={0.15}
+          maxZoom={2}
+          defaultEdgeOptions={{
+            type: "smoothstep",
+          }}
+          proOptions={{ hideAttribution: true }}
+        >
+          <Background
+            variant={BackgroundVariant.Dots}
+            gap={24}
+            size={1}
+            color="#e0dbd4"
+          />
+          <Controls
             style={{
-              background: "#ede8e0",
-              color: "#7a7570",
-              border: "1px solid #ddd8d2",
+              background: "#fff",
+              border: "1px solid #e8e4de",
+              borderRadius: 10,
+              boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+            }}
+          />
+          <MiniMap
+            style={{
+              background: "#faf8f5",
+              border: "1px solid #e8e4de",
+              borderRadius: 10,
+            }}
+            nodeColor={(node) => {
+              if (node.type === "couple") return "transparent";
+              const data = node.data as { person?: { side?: string } };
+              if (data?.person?.side === "Jans sida") return "#b8d4b0";
+              if (data?.person?.side === "Karins sida") return "#e8d88a";
+              return "#ddd8d2";
+            }}
+            maskColor="rgba(250,248,245,0.75)"
+          />
+
+          {/* Generation swim-lane labels — rendered as SVG foreignObject via overlay */}
+          <GenLabels nodes={nodes} />
+        </ReactFlow>
+      </div>
+
+      {/* ── Bottom note about selected person ─────────────────── */}
+      {rootPerson && (
+        <div
+          style={{
+            background: "#fff",
+            borderTop: "1px solid #e8e4de",
+            padding: "10px 24px",
+            flexShrink: 0,
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+          }}
+        >
+          <div
+            style={{
+              width: 8,
+              height: 8,
+              borderRadius: "50%",
+              background: "#4a7c59",
+              boxShadow: "0 0 0 3px #4a7c5930",
+            }}
+          />
+          <span style={{ fontSize: 12, color: "#7a7570" }}>
+            Trädet visas med{" "}
+            <strong style={{ color: "#2c2925" }}>
+              {livingPersons.find((p) => p.id === rootPerson)?.fullName ?? rootPerson}
+            </strong>{" "}
+            markerad som rot
+          </span>
+          <button
+            onClick={() => setRootPerson(null)}
+            style={{
+              marginLeft: "auto",
+              fontSize: 11,
+              color: "#9a9590",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              padding: "2px 6px",
+              borderRadius: 6,
             }}
           >
-            Äldst överst · Yngst nederst
-          </div>
+            Rensa
+          </button>
         </div>
+      )}
+    </div>
+  );
+}
 
-        {allGenerations.map((gen, idx) => {
-          const persons = filteredPersonsForGen(gen);
-          if (persons.length === 0) return null;
-          return (
-            <GenerationRow
-              key={gen}
-              generation={gen}
-              persons={persons}
-              isLast={idx === allGenerations.length - 1}
-            />
-          );
-        })}
-      </div>
+// ─── Generation labels overlay ─────────────────────────────────────────────────
 
-      {/* ── Bottom note ─────────────────────────────────────── */}
-      <div style={{ borderTop: "1px solid #e8e4de", background: "#fff" }}>
-        <div className="container mx-auto px-4 max-w-4xl py-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div
-              className="rounded-2xl p-5"
-              style={{
-                background: "#f0f5ed",
-                borderLeft: "3px solid #b8d4b0",
-              }}
-            >
-              <h3 className="font-serif font-semibold mb-2" style={{ color: "#4a7c59" }}>
-                Jans sida
-              </h3>
-              <p className="text-sm leading-relaxed" style={{ color: "#6a7a6a" }}>
-                Familjenamnet Lindoff härstammar från dragon Jöns Andersson Lindoff (1863–1948)
-                som antog soldatnamnet vid Skånska Dragonregementet 1883. Han köpte huset
-                Kyrkheddinge 8:36 år 1936 — samma plats som Jan Lindoff köpte 1977.
-              </p>
-            </div>
-            <div
-              className="rounded-2xl p-5"
-              style={{
-                background: "#fdf9ee",
-                borderLeft: "3px solid #d9c07a",
-              }}
-            >
-              <h3 className="font-serif font-semibold mb-2" style={{ color: "#9a7d2e" }}>
-                Karins sida
-              </h3>
-              <p className="text-sm leading-relaxed" style={{ color: "#7a6a4a" }}>
-                Karins linje rymmer soldatnamnet Bramstång (Gumme Olsson Bramstång, båtsman 1847),
-                stilgjutaren Hans Waldemar Hansson vid Håkan Ohlssons boktryckeri i Lund — och
-                Maj-Britt Hansson som avled 1957 och vars barn Knut och Hilma tog hand om.
-              </p>
-            </div>
+/**
+ * Floating labels at the left edge of each generation row.
+ * Uses React Flow's useStore to read viewport transform so labels
+ * stay in sync when the user pans/zooms.
+ */
+import { useStore } from "@xyflow/react";
+
+function GenLabels({ nodes }: { nodes: Node[] }) {
+  const transform = useStore((s) => s.transform);
+  const [, ty, zoom] = transform;
+
+  // Compute Y per generation from the person nodes
+  const genY = useMemo(() => {
+    const map = new Map<number, number>();
+    for (const n of nodes) {
+      const nd = n.data as { person?: { generation?: number } };
+      const gen = nd?.person?.generation;
+      if (gen !== undefined && !map.has(gen)) {
+        map.set(gen, n.position.y);
+      }
+    }
+    return map;
+  }, [nodes]);
+
+  return (
+    <div
+      style={{
+        position: "absolute",
+        inset: 0,
+        pointerEvents: "none",
+        overflow: "hidden",
+      }}
+    >
+      {Array.from(genY.entries()).map(([gen, y]) => {
+        const meta = GEN_META[gen];
+        if (!meta) return null;
+        const screenY = y * zoom + ty;
+        return (
+          <div
+            key={gen}
+            style={{
+              position: "absolute",
+              left: 8,
+              top: screenY + 4,
+              background: "rgba(255,255,255,0.85)",
+              backdropFilter: "blur(4px)",
+              border: "1px solid #e8e4de",
+              borderRadius: 6,
+              padding: "3px 8px",
+              fontSize: 10,
+              fontWeight: 600,
+              letterSpacing: "0.06em",
+              color: "#9a9590",
+              whiteSpace: "nowrap",
+              maxWidth: 220,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              opacity: zoom < 0.3 ? 0 : 1,
+              transition: "opacity 0.2s",
+            }}
+          >
+            {meta.label}
           </div>
-        </div>
-      </div>
+        );
+      })}
     </div>
   );
 }
