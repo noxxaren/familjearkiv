@@ -1,7 +1,7 @@
 // app/tree/page.tsx
 import type { Metadata } from "next";
-import { AppShell } from "@/components/layout/AppShell";
-import { FamilyTreeView } from "@/components/tree/FamilyTreeView";
+import { Suspense } from "react";
+import { TreePageClient } from "@/components/tree/TreePageClient";
 
 export const metadata: Metadata = {
   title: "Släktträd",
@@ -10,8 +10,8 @@ export const metadata: Metadata = {
 
 export default function TreePage() {
   return (
-    <AppShell>
-      <FamilyTreeView />
-    </AppShell>
+    <Suspense>
+      <TreePageClient />
+    </Suspense>
   );
 }

@@ -3,10 +3,12 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { TreePine, ArrowRight, Users, BookOpen, Calendar } from "lucide-react";
-import { getFeaturedPersons, getPersonCount, getPersonsBySide } from "@/lib/data";
-import { resolveImageSrc } from "@/lib/utils";
+import { getPersonCount, getPersonsBySide } from "@/lib/data";
+import { resolveImageSrc, getAvatarUrl } from "@/lib/utils";
+import { getLivingPersons } from "@/lib/tree";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -18,10 +20,11 @@ const fadeUp = {
 };
 
 export function HomeHero() {
-  const featured = getFeaturedPersons().slice(0, 4);
   const count = getPersonCount();
   const janCount = getPersonsBySide("Jans sida").length;
   const karinCount = getPersonsBySide("Karins sida").length;
+  const livingPersons = getLivingPersons();
+  const router = useRouter();
 
   return (
     <div className="space-y-4">
@@ -223,84 +226,99 @@ export function HomeHero() {
         ))}
       </div>
 
-      {/* ── Featured persons ──────────────────────────────────────────────── */}
-      {featured.length > 0 && (
-        <motion.div
-          custom={8}
-          variants={fadeUp}
-          initial="hidden"
-          animate="show"
-          className="bg-white rounded-2xl p-5 card-shadow"
-        >
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <p className="text-xs font-medium text-text-muted tracking-[0.15em] uppercase mb-0.5">
-                Kända i arkivet
-              </p>
-              <h2 className="font-serif font-semibold text-lg text-text-primary">
-                Familjemedlemmar
-              </h2>
-            </div>
-            <Link
-              href="/people"
-              className="text-xs text-text-muted hover:text-primary transition-colors flex items-center gap-1"
-            >
-              Alla <ArrowRight className="w-3 h-3" />
-            </Link>
+      {/* ── "Vem är du?" — person picker navigating to /tree ─────────────── */}
+      <motion.div
+        custom={8}
+        variants={fadeUp}
+        initial="hidden"
+        animate="show"
+        className="bg-white rounded-2xl p-5 card-shadow"
+      >
+        <div className="flex items-center justify-between mb-1">
+          <div>
+            <p className="text-xs font-medium text-text-muted tracking-[0.15em] uppercase mb-0.5">
+              Utforska trädet
+            </p>
+            <h2 className="font-serif font-semibold text-lg text-text-primary">
+              Vem är du?
+            </h2>
           </div>
+          <Link
+            href="/tree"
+            className="text-xs text-text-muted hover:text-primary transition-colors flex items-center gap-1"
+          >
+            Öppna trädet <ArrowRight className="w-3 h-3" />
+          </Link>
+        </div>
+        <p className="text-xs text-text-muted mb-4">
+          Välj din plats i familjen — trädet öppnas med fokus på dig och dina förfäder.
+        </p>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {featured.map((person, i) => {
-              const isJan = person.side === "Jans sida";
-              const isKarin = person.side === "Karins sida";
-              return (
-                <motion.div
-                  key={person.id}
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.6 + i * 0.08, duration: 0.4 }}
+        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+          {livingPersons.map((person, i) => {
+            const isJan = person.side === "Jans sida";
+            const isKarin = person.side === "Karins sida";
+            const accent = isJan ? "#1E3A1E" : isKarin ? "#8B6A10" : "#1A1714";
+            const bg = isJan ? "#EFF5EC" : isKarin ? "#FBF7EC" : "#F4F0EB";
+            const border = isJan ? "#B8D4B0" : isKarin ? "#D9C07A" : "#E4E0DA";
+            return (
+              <motion.div
+                key={person.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.55 + i * 0.06, duration: 0.35 }}
+              >
+                <button
+                  onClick={() => router.push(`/tree?person=${person.id}`)}
+                  className="w-full flex flex-col items-center gap-2 p-3 rounded-xl transition-all hover:-translate-y-0.5 hover:shadow-md group cursor-pointer"
+                  style={{ background: bg, border: `1px solid ${border}` }}
                 >
-                  <Link
-                    href={`/people/${person.id}`}
-                    className="flex flex-col items-center gap-2 p-3 rounded-xl transition-all hover:-translate-y-0.5 group"
-                    style={{
-                      background: isJan ? "#EFF5EC" : isKarin ? "#FBF7EC" : "#F4F0EB",
-                    }}
+                  <div
+                    className="w-12 h-12 rounded-full overflow-hidden border-2 flex-shrink-0"
+                    style={{ borderColor: border }}
                   >
-                    <div
-                      className="w-14 h-14 rounded-full overflow-hidden border-2"
-                      style={{
-                        borderColor: isJan ? "#B8D4B0" : isKarin ? "#D9C07A" : "#E4E0DA",
+                    <Image
+                      src={resolveImageSrc(person.image, person.id, person.gender)}
+                      alt={person.fullName}
+                      width={48}
+                      height={48}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).src = getAvatarUrl(person.id, person.gender);
                       }}
+                    />
+                  </div>
+                  <div className="text-center min-w-0 w-full">
+                    <p
+                      className="text-xs font-semibold leading-tight truncate group-hover:underline"
+                      style={{ color: accent }}
                     >
-                      <Image
-                        src={resolveImageSrc(person.image, person.id, person.gender)}
-                        alt={person.fullName}
-                        width={56}
-                        height={56}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="text-center min-w-0">
-                      <p
-                        className="text-sm font-semibold leading-tight truncate group-hover:underline"
-                        style={{ color: isJan ? "#1E3A1E" : isKarin ? "#8B6A10" : "#1A1714" }}
-                      >
-                        {person.firstName}
+                      {person.firstName}
+                    </p>
+                    {person.birthYear && (
+                      <p className="text-xs text-text-muted mt-0.5">
+                        f. {person.birthYear}
                       </p>
-                      {person.birthYear && (
-                        <p className="text-xs text-text-muted mt-0.5">
-                          f. {person.birthYear}
-                        </p>
-                      )}
-                    </div>
-                  </Link>
-                </motion.div>
-              );
-            })}
-          </div>
-        </motion.div>
-      )}
+                    )}
+                  </div>
+                </button>
+              </motion.div>
+            );
+          })}
+        </div>
+
+        {/* "Visa hela trädet" fallback */}
+        <div className="mt-3 pt-3 border-t border-border">
+          <Link
+            href="/tree"
+            className="flex items-center justify-center gap-2 py-2 rounded-xl text-xs font-medium transition-all"
+            style={{ color: "#5c5650", background: "#f5f2ee" }}
+          >
+            <TreePine className="w-3.5 h-3.5" />
+            Visa hela trädet utan fokus
+          </Link>
+        </div>
+      </motion.div>
 
       {/* ── Ancestor tree teaser ──────────────────────────────────────────── */}
       <motion.div

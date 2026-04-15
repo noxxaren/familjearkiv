@@ -15,10 +15,9 @@ import {
   type NodeMouseHandler,
 } from "@xyflow/react";
 
-import { buildFullTree, getLivingPersons } from "@/lib/tree";
+import { buildFullTree } from "@/lib/tree";
 import { TreePersonNode } from "./TreePersonNode";
 import { TreeCoupleNode } from "./TreeCoupleNode";
-import { PersonPicker } from "./PersonPicker";
 import { PersonDetailPanel } from "./PersonDetailPanel";
 
 // ─── Node type registry ────────────────────────────────────────────────────────
@@ -39,13 +38,16 @@ const GEN_META: Record<number, string> = {
    4:   "Barnbarn  ·  2012–",
 };
 
+// ─── Props ────────────────────────────────────────────────────────────────────
+
+interface Props {
+  rootPerson: string | null;
+}
+
 // ─── Main component ────────────────────────────────────────────────────────────
 
-export function FamilyTreeView() {
-  const [rootPerson, setRootPerson] = useState<string | null>(null);
+export function FamilyTreeView({ rootPerson }: Props) {
   const [selectedPerson, setSelectedPerson] = useState<string | null>(null);
-
-  const livingPersons = useMemo(() => getLivingPersons(), []);
 
   const { nodes: rawNodes, edges: rawEdges, focusedIds } = useMemo(
     () => buildFullTree(rootPerson ?? undefined),
@@ -55,157 +57,70 @@ export function FamilyTreeView() {
   const nodes = rawNodes as unknown as Node[];
   const edges = rawEdges as unknown as Edge[];
 
-  const handlePickerSelect = useCallback((id: string | null) => {
-    setRootPerson(id);
-    setSelectedPerson(null); // close panel when picking focus
-  }, []);
-
   const handleNodeClick: NodeMouseHandler = useCallback((_event, node) => {
     if (node.type === "person") {
-      setSelectedPerson(node.id);
+      setSelectedPerson((prev) => (prev === node.id ? null : node.id));
     }
   }, []);
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        height: "100vh",
-        background: "#faf8f5",
-        overflow: "hidden",
-      }}
-    >
-      {/* ── Header ───────────────────────────────────────────────── */}
-      <div
-        style={{
-          background: "#fff",
-          borderBottom: "1px solid #e8e4de",
-          padding: "16px 24px 0",
-          flexShrink: 0,
-        }}
+    <div style={{ width: "100%", height: "100%", position: "relative" }}>
+      <ReactFlow
+        nodes={nodes}
+        edges={edges}
+        nodeTypes={nodeTypes}
+        onNodeClick={handleNodeClick}
+        fitView
+        fitViewOptions={{ padding: 0.1 }}
+        minZoom={0.1}
+        maxZoom={2.5}
+        defaultEdgeOptions={{ type: "smoothstep" }}
+        proOptions={{ hideAttribution: true }}
       >
-        <p style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.18em", textTransform: "uppercase", color: "#9a9590", margin: "0 0 3px" }}>
-          Familjearkivet Lindoff
-        </p>
-        <h1 style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 26, fontWeight: 700, color: "#2c2925", letterSpacing: "-0.02em", margin: "0 0 3px" }}>
-          Släktträd
-        </h1>
-        <p style={{ fontSize: 11, color: "#7a7570", margin: "0 0 12px" }}>
-          6 generationer · från 1820-talets Skåne till nutid · Klicka en person för detaljer
-        </p>
-
-        {/* Legend row */}
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "8px 18px", paddingBottom: 12 }}>
-          {[
-            { dot: { bg: "#b8d4b0", border: "#4a7c59" }, label: "Jans sida" },
-            { dot: { bg: "#e8d88a", border: "#9a7d2e" }, label: "Karins sida" },
-          ].map(({ dot, label }) => (
-            <div key={label} style={{ display: "flex", alignItems: "center", gap: 5 }}>
-              <div style={{ width: 9, height: 9, borderRadius: "50%", background: dot.bg, border: `1px solid ${dot.border}` }} />
-              <span style={{ fontSize: 11, color: "#9a9590" }}>{label}</span>
-            </div>
-          ))}
-          <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-            <div style={{ width: 16, height: 16, borderRadius: "50%", background: "#fff", border: "1.5px solid #e8c0c8", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 0 0 2px rgba(232,192,200,0.3)" }}>
-              <svg width="9" height="9" viewBox="0 0 24 24" fill="#c0566a"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-            </div>
-            <span style={{ fontSize: 11, color: "#9a9590" }}>Par/gifta</span>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-            <div style={{ width: 20, height: 2, background: "#4a7c5980" }} />
-            <span style={{ fontSize: 11, color: "#9a9590" }}>Förälder–barn</span>
-          </div>
-          {rootPerson && (
-            <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 6 }}>
-              <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#4a7c59", boxShadow: "0 0 0 2.5px #4a7c5930" }} />
-              <span style={{ fontSize: 11, color: "#7a7570" }}>
-                Fokus: <strong style={{ color: "#2c2925" }}>
-                  {livingPersons.find((p) => p.id === rootPerson)?.fullName ?? rootPerson}
-                </strong>
-              </span>
-              <button
-                onClick={() => setRootPerson(null)}
-                style={{ fontSize: 10, color: "#9a9590", background: "none", border: "none", cursor: "pointer", padding: "1px 5px", borderRadius: 5 }}
-              >
-                × Rensa
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* ── Person picker ─────────────────────────────────────────── */}
-      <PersonPicker
-        persons={livingPersons}
-        selected={rootPerson}
-        onSelect={handlePickerSelect}
-      />
-
-      {/* ── React Flow canvas + detail panel ─────────────────────── */}
-      <div style={{ flex: 1, position: "relative" }}>
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          nodeTypes={nodeTypes}
-          onNodeClick={handleNodeClick}
-          fitView
-          fitViewOptions={{ padding: 0.14 }}
-          minZoom={0.12}
-          maxZoom={2.2}
-          defaultEdgeOptions={{ type: "smoothstep" }}
-          proOptions={{ hideAttribution: true }}
-        >
-          <Background variant={BackgroundVariant.Dots} gap={24} size={1} color="#e0dbd4" />
-          <Controls
-            style={{
-              background: "#fff",
-              border: "1px solid #e8e4de",
-              borderRadius: 10,
-              boxShadow: "0 2px 8px rgba(0,0,0,0.07)",
-            }}
-          />
-          <MiniMap
-            style={{
-              background: "#faf8f5",
-              border: "1px solid #e8e4de",
-              borderRadius: 10,
-            }}
-            nodeColor={(node) => {
-              if (node.type === "couple") return "transparent";
-              const nd = node.data as { dimmed?: boolean; person?: { side?: string } };
-              if (nd?.dimmed) return "#e8e4de";
-              if (nd?.person?.side === "Jans sida") return "#b8d4b0";
-              if (nd?.person?.side === "Karins sida") return "#e8d88a";
-              return "#ddd8d2";
-            }}
-            maskColor="rgba(250,248,245,0.75)"
-          />
-
-          {/* FitView controller — must be inside ReactFlow to use its context */}
-          <FocusFitter
-            focusedIds={focusedIds}
-            rootPerson={rootPerson}
-          />
-
-          {/* Generation labels overlay */}
-          <GenLabels nodes={nodes} />
-        </ReactFlow>
-
-        {/* Detail panel — absolutely positioned over canvas */}
-        <PersonDetailPanel
-          personId={selectedPerson}
-          onClose={() => setSelectedPerson(null)}
-          onNavigate={(id) => {
-            setSelectedPerson(id);
+        <Background variant={BackgroundVariant.Dots} gap={24} size={1} color="#e0dbd4" />
+        <Controls
+          style={{
+            background: "#fff",
+            border: "1px solid #e8e4de",
+            borderRadius: 10,
+            boxShadow: "0 2px 8px rgba(0,0,0,0.07)",
           }}
         />
-      </div>
+        <MiniMap
+          style={{
+            background: "#faf8f5",
+            border: "1px solid #e8e4de",
+            borderRadius: 10,
+          }}
+          nodeColor={(node) => {
+            if (node.type === "couple") return "transparent";
+            const nd = node.data as { dimmed?: boolean; person?: { side?: string } };
+            if (nd?.dimmed) return "#e8e4de";
+            if (nd?.person?.side === "Jans sida") return "#b8d4b0";
+            if (nd?.person?.side === "Karins sida") return "#e8d88a";
+            return "#ddd8d2";
+          }}
+          maskColor="rgba(250,248,245,0.75)"
+        />
+
+        {/* FitView controller — inside ReactFlow context */}
+        <FocusFitter focusedIds={focusedIds} rootPerson={rootPerson} />
+
+        {/* Generation labels overlay */}
+        <GenLabels nodes={nodes} />
+      </ReactFlow>
+
+      {/* Detail panel slides in over the canvas */}
+      <PersonDetailPanel
+        personId={selectedPerson}
+        onClose={() => setSelectedPerson(null)}
+        onNavigate={(id) => setSelectedPerson(id)}
+      />
     </div>
   );
 }
 
-// ─── FocusFitter — calls fitView inside ReactFlow context ─────────────────────
+// ─── FocusFitter ──────────────────────────────────────────────────────────────
 
 function FocusFitter({
   focusedIds,
@@ -217,7 +132,6 @@ function FocusFitter({
   const { fitView } = useReactFlow();
 
   useEffect(() => {
-    // Delay so React Flow has time to lay out the nodes
     const timer = setTimeout(() => {
       if (focusedIds && focusedIds.size > 0) {
         fitView({
@@ -226,7 +140,7 @@ function FocusFitter({
           padding: 0.22,
         });
       } else {
-        fitView({ duration: 600, padding: 0.14 });
+        fitView({ duration: 600, padding: 0.1 });
       }
     }, 80);
     return () => clearTimeout(timer);
@@ -235,7 +149,7 @@ function FocusFitter({
   return null;
 }
 
-// ─── Generation labels overlay ─────────────────────────────────────────────────
+// ─── Generation labels ────────────────────────────────────────────────────────
 
 function GenLabels({ nodes }: { nodes: Node[] }) {
   const transform = useStore((s) => s.transform);
@@ -261,7 +175,7 @@ function GenLabels({ nodes }: { nodes: Node[] }) {
         const label = GEN_META[gen];
         if (!label) return null;
         const screenY = y * zoom + ty;
-        if (screenY < -20 || screenY > 2000) return null;
+        if (screenY < -20 || screenY > 3000) return null;
         return (
           <div
             key={gen}
@@ -269,7 +183,7 @@ function GenLabels({ nodes }: { nodes: Node[] }) {
               position: "absolute",
               left: 8,
               top: screenY + 4,
-              background: "rgba(255,255,255,0.88)",
+              background: "rgba(255,255,255,0.9)",
               backdropFilter: "blur(4px)",
               border: "1px solid #e8e4de",
               borderRadius: 6,
