@@ -4,7 +4,6 @@ import { useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { FamilyTreeView } from "./FamilyTreeView";
 import { TreeLeftPanel } from "./TreeLeftPanel";
-import { TreeRightPanel } from "./TreeRightPanel";
 import { getLivingPersons } from "@/lib/tree";
 
 export function TreePageClient() {
@@ -39,7 +38,6 @@ export function TreePageClient() {
         <FamilyTreeView rootPerson={rootPerson} />
       </div>
 
-      <TreeRightPanel />
     </div>
   );
 }
