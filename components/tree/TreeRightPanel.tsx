@@ -24,39 +24,6 @@ export function TreeRightPanel() {
         gap: 0,
       }}
     >
-      {/* ── Legend ────────────────────────────────────────────── */}
-      <div style={{ marginBottom: 20 }}>
-        <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", color: "#b5b0aa", margin: "0 0 10px" }}>
-          Förklaring
-        </p>
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          <LegendRow>
-            <div style={{ width: 28, height: 16, borderRadius: 5, background: "#f0f5ed", border: "1.5px solid #b8d4b0", flexShrink: 0 }} />
-            <span>Jans sida</span>
-          </LegendRow>
-          <LegendRow>
-            <div style={{ width: 28, height: 16, borderRadius: 5, background: "#faf6e8", border: "1.5px solid #d9c07a", flexShrink: 0 }} />
-            <span>Karins sida</span>
-          </LegendRow>
-          <LegendRow>
-            <HeartBadge />
-            <span>Par / gifta</span>
-          </LegendRow>
-          <LegendRow>
-            <div style={{ display: "flex", alignItems: "center" }}>
-              <div style={{ width: 24, height: 0, borderTop: "2px solid #4a7c5980" }} />
-            </div>
-            <span>Förälder–barn</span>
-          </LegendRow>
-          <LegendRow>
-            <div style={{ display: "flex", alignItems: "center" }}>
-              <div style={{ width: 24, height: 0, borderTop: "1.5px solid #d4899a80" }} />
-            </div>
-            <span>Partnerkoppling</span>
-          </LegendRow>
-        </div>
-      </div>
-
       {/* ── Stats ─────────────────────────────────────────────── */}
       <div style={{ marginBottom: 20 }}>
         <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", color: "#b5b0aa", margin: "0 0 10px" }}>
@@ -153,42 +120,3 @@ export function TreeRightPanel() {
   );
 }
 
-// ─── Small helper components ──────────────────────────────────────────────────
-
-function LegendRow({ children }: { children: React.ReactNode }) {
-  return (
-    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-      {Array.isArray(children) ? (
-        <>
-          {children[0]}
-          <span style={{ fontSize: 11, color: "#7a7570" }}>{children[1]}</span>
-        </>
-      ) : (
-        children
-      )}
-    </div>
-  );
-}
-
-function HeartBadge() {
-  return (
-    <div
-      style={{
-        width: 22,
-        height: 22,
-        borderRadius: "50%",
-        background: "#fff",
-        border: "1.5px solid #e8c0c8",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        boxShadow: "0 0 0 2px rgba(232,192,200,0.25)",
-        flexShrink: 0,
-      }}
-    >
-      <svg width="10" height="10" viewBox="0 0 24 24" fill="#c0566a">
-        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-      </svg>
-    </div>
-  );
-}
