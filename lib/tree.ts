@@ -1,82 +1,170 @@
 /**
- * lib/tree.ts
+ * lib/tree.ts — Family tree graph builder
  *
- * Builds React Flow-compatible nodes and edges for the family tree.
+ * Layout: dagre (top-to-bottom hierarchical layout)
+ * Couple nodes: invisible midpoints between partners, used to route
+ *               parent→child edges through a clean Y-junction.
  *
- * Layout strategy:
- *  - Each generation occupies a fixed Y row.
- *  - Each couple gets an invisible "couple node" at the midpoint between partners.
- *  - Person → CoupleNode edges run horizontally.
- *  - CoupleNode → Child edges run vertically downward.
- *  - X positions are computed per-generation using a simple left-to-right spread.
+ * Focus mode: when rootPersonId is provided, every node NOT in the
+ *             selected person's ancestor+descendant+partner set gets
+ *             `dimmed: true` so the component can fade it out.
  */
 
+import Dagre from "@dagrejs/dagre";
 import { familyData } from "@/data/family";
 import type { Person } from "@/types/person";
 
 // ─── Layout constants ─────────────────────────────────────────────────────────
 
-export const NODE_W = 176;
-export const NODE_H = 84;
-const X_MARGIN = 24;
-const Y_SPACING = 180; // px between generation rows
+export const NODE_W = 180;
+export const NODE_H = 88;
 
-// ─── Node types ───────────────────────────────────────────────────────────────
+// ─── Node / Edge types ────────────────────────────────────────────────────────
 
 export interface PersonNodeData {
   person: Person;
   isRoot?: boolean;
+  dimmed?: boolean;
 }
 
 export interface CoupleNodeData {
   coupleId: string;
+  dimmed?: boolean;
 }
 
 export type FamilyNode =
-  | { id: string; type: "person"; data: PersonNodeData; position: { x: number; y: number }; zIndex?: number }
-  | { id: string; type: "couple"; data: CoupleNodeData; position: { x: number; y: number }; zIndex?: number };
+  | { id: string; type: "person"; data: PersonNodeData; position: { x: number; y: number } }
+  | { id: string; type: "couple"; data: CoupleNodeData; position: { x: number; y: number } };
 
 export interface FamilyEdge {
   id: string;
   source: string;
   target: string;
-  sourceHandle?: string;
-  targetHandle?: string;
   type: string;
   style?: Record<string, string | number>;
   animated?: boolean;
-  markerEnd?: unknown;
 }
 
-// ─── Living persons (no deathYear/deathDate) ─────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 export function getLivingPersons(): Person[] {
   return familyData.filter((p) => !p.deathYear && !p.deathDate);
 }
 
-// ─── Couple ID ────────────────────────────────────────────────────────────────
+export function getPersonById(id: string): Person | undefined {
+  return familyData.find((p) => p.id === id);
+}
 
 function coupleId(a: string, b: string): string {
   return "couple:" + [a, b].sort().join("+");
 }
 
-// ─── Build full tree graph ────────────────────────────────────────────────────
+// ─── Focus set ────────────────────────────────────────────────────────────────
 
 /**
- * Build the complete family tree graph.
- * Returns nodes (person + couple) and edges for React Flow.
+ * Returns the set of person IDs that are "in focus" when rootPersonId is
+ * selected. Includes: the person themselves, all ancestors, all descendants,
+ * and all partners of everyone in that set.
+ */
+export function getFocusedPersonIds(rootPersonId: string): Set<string> {
+  const focused = new Set<string>();
+
+  function addAncestors(id: string): void {
+    if (focused.has(id)) return;
+    focused.add(id);
+    const p = getPersonById(id);
+    for (const parentId of p?.parents ?? []) addAncestors(parentId);
+  }
+
+  function addDescendants(id: string): void {
+    if (focused.has(id)) return;
+    focused.add(id);
+    const p = getPersonById(id);
+    for (const childId of p?.children ?? []) addDescendants(childId);
+  }
+
+  addAncestors(rootPersonId);
+  addDescendants(rootPersonId);
+
+  // Partners of everyone in the focused set
+  Array.from(focused).forEach((id) => {
+    const p = getPersonById(id);
+    for (const partnerId of p?.partner ?? []) focused.add(partnerId);
+  });
+
+  return focused;
+}
+
+// ─── Dagre layout ─────────────────────────────────────────────────────────────
+
+/**
+ * Run dagre on person nodes only (couple nodes are positioned manually).
+ * Returns a map of personId → { x, y } (top-left corner coordinates).
+ */
+function computeDagreLayout(): Map<string, { x: number; y: number }> {
+  const g = new Dagre.graphlib.Graph();
+  g.setDefaultEdgeLabel(() => ({}));
+  g.setGraph({
+    rankdir: "TB",
+    nodesep: 52,   // horizontal gap between nodes in the same rank
+    ranksep: 110,  // vertical gap between ranks
+    marginx: 60,
+    marginy: 40,
+  });
+
+  // Add all person nodes
+  for (const person of familyData) {
+    g.setNode(person.id, { width: NODE_W, height: NODE_H });
+  }
+
+  // Add parent→child edges (dagre uses these for ranking)
+  for (const person of familyData) {
+    for (const parentId of person.parents ?? []) {
+      if (getPersonById(parentId)) {
+        g.setEdge(parentId, person.id);
+      }
+    }
+  }
+
+  Dagre.layout(g);
+
+  const positions = new Map<string, { x: number; y: number }>();
+  for (const person of familyData) {
+    const node = g.node(person.id);
+    if (node) {
+      // dagre gives center coordinates — convert to top-left
+      positions.set(person.id, {
+        x: node.x - NODE_W / 2,
+        y: node.y - NODE_H / 2,
+      });
+    }
+  }
+  return positions;
+}
+
+// ─── Build full tree ──────────────────────────────────────────────────────────
+
+/**
+ * Build the complete family tree for React Flow.
  *
- * @param rootPersonId  — if supplied, that person's node gets `isRoot: true`
+ * @param rootPersonId — when set, marks that person as root and dims
+ *                       everyone outside their ancestor/descendant set.
  */
 export function buildFullTree(rootPersonId?: string): {
   nodes: FamilyNode[];
   edges: FamilyEdge[];
+  focusedIds: Set<string> | null;
 } {
-  // ── 1. Collect all couples ────────────────────────────────────────────────
-  // A couple = any pair (A, B) where A lists B as a partner (and B lists A).
-  // We only add a couple node once (deduped via coupleId).
-  const coupleSet = new Map<string, { a: string; b: string }>();
+  // ── Layout ────────────────────────────────────────────────────────────────
+  const personPos = computeDagreLayout();
 
+  // ── Focused set ───────────────────────────────────────────────────────────
+  const focusedIds = rootPersonId
+    ? getFocusedPersonIds(rootPersonId)
+    : null;
+
+  // ── Couples ───────────────────────────────────────────────────────────────
+  const coupleSet = new Map<string, { a: string; b: string }>();
   for (const person of familyData) {
     for (const partnerId of person.partner ?? []) {
       const cid = coupleId(person.id, partnerId);
@@ -86,166 +174,156 @@ export function buildFullTree(rootPersonId?: string): {
     }
   }
 
-  // ── 2. Assign X positions per generation ─────────────────────────────────
-  // Strategy: group persons by generation, spread them evenly.
-  // Couples are placed between their two partner nodes (averaged X).
-  // We iterate until stable (couple X depends on person X, person X
-  // may be shifted by couple arrangement — one pass is enough here).
-
-  const byGen = new Map<number, Person[]>();
-  for (const p of familyData) {
-    const g = p.generation ?? 0;
-    if (!byGen.has(g)) byGen.set(g, []);
-    byGen.get(g)!.push(p);
-  }
-
-  const sortedGens = Array.from(byGen.keys()).sort((a, b) => a - b);
-  const genY = new Map<number, number>();
-  sortedGens.forEach((g, i) => {
-    genY.set(g, i * Y_SPACING);
+  // ── Person nodes ──────────────────────────────────────────────────────────
+  const nodes: FamilyNode[] = familyData.map((person) => {
+    const pos = personPos.get(person.id) ?? { x: 0, y: 0 };
+    const dimmed = focusedIds !== null && !focusedIds.has(person.id);
+    return {
+      id: person.id,
+      type: "person" as const,
+      data: {
+        person,
+        isRoot: person.id === rootPersonId,
+        dimmed,
+      },
+      position: pos,
+    };
   });
 
-  // Initial X assignment: equally spaced within generation
-  const personX = new Map<string, number>();
-  const personGenOrder = new Map<string, number>(); // index within generation
-
-  Array.from(byGen.values()).forEach((persons) => {
-    // Sort by: Jan side first, then Karin side, then by ID
-    persons.sort((a: Person, b: Person) => {
-      const sideOrder = (s?: string) =>
-        s === "Jans sida" ? 0 : s === "Karins sida" ? 1 : 2;
-      return sideOrder(a.side) - sideOrder(b.side) || a.id.localeCompare(b.id);
-    });
-    const total = persons.length;
-    const totalWidth = total * NODE_W + (total - 1) * X_MARGIN * 2;
-    const startX = -totalWidth / 2;
-    persons.forEach((p: Person, i: number) => {
-      const x = startX + i * (NODE_W + X_MARGIN * 2);
-      personX.set(p.id, x);
-      personGenOrder.set(p.id, i);
-    });
-  });
-
-  // ── 3. Compute couple node positions ─────────────────────────────────────
-  const coupleX = new Map<string, number>();
-  const coupleY = new Map<string, number>();
-
+  // ── Couple nodes (positioned at midpoint between partners) ────────────────
   Array.from(coupleSet.entries()).forEach(([cid, { a, b }]) => {
-    const pA = familyData.find((p) => p.id === a);
-    const pB = familyData.find((p) => p.id === b);
-    const gen = pA?.generation ?? pB?.generation ?? 0;
-    const xA = personX.get(a) ?? 0;
-    const xB = personX.get(b) ?? 0;
-    coupleX.set(cid, (xA + xB) / 2 + NODE_W / 2);
-    coupleY.set(cid, (genY.get(gen) ?? 0) + NODE_H / 2 - 6);
-  });
-
-  // ── 4. Build person nodes ─────────────────────────────────────────────────
-  const nodes: FamilyNode[] = familyData.map((person) => ({
-    id: person.id,
-    type: "person" as const,
-    data: {
-      person,
-      isRoot: person.id === rootPersonId,
-    },
-    position: {
-      x: personX.get(person.id) ?? 0,
-      y: genY.get(person.generation ?? 0) ?? 0,
-    },
-  }));
-
-  // ── 5. Build couple nodes ─────────────────────────────────────────────────
-  Array.from(coupleSet.keys()).forEach((cid) => {
+    const posA = personPos.get(a);
+    const posB = personPos.get(b);
+    if (!posA || !posB) return;
+    const mx = (posA.x + posB.x) / 2 + NODE_W / 2;
+    const my = (posA.y + posB.y) / 2 + NODE_H / 2;
+    const dimmed =
+      focusedIds !== null &&
+      !focusedIds.has(a) &&
+      !focusedIds.has(b);
     nodes.push({
       id: cid,
       type: "couple" as const,
-      data: { coupleId: cid },
-      position: {
-        x: coupleX.get(cid) ?? 0,
-        y: coupleY.get(cid) ?? 0,
-      },
+      data: { coupleId: cid, dimmed },
+      position: { x: mx, y: my },
     });
   });
 
-  // ── 6. Build edges ────────────────────────────────────────────────────────
+  // ── Edges ─────────────────────────────────────────────────────────────────
   const edges: FamilyEdge[] = [];
-  const seenEdges = new Set<string>();
+  const seen = new Set<string>();
+
+  const isDimmedEdge = (
+    sourceId: string,
+    targetId: string
+  ): boolean => {
+    if (!focusedIds) return false;
+    // An edge is dimmed if BOTH endpoints are not in focused set
+    const srcPerson = sourceId.startsWith("couple:")
+      ? (() => {
+          const c = coupleSet.get(sourceId);
+          return c ? (focusedIds.has(c.a) || focusedIds.has(c.b)) : false;
+        })()
+      : focusedIds.has(sourceId);
+    const tgtPerson = targetId.startsWith("couple:")
+      ? (() => {
+          const c = coupleSet.get(targetId);
+          return c ? (focusedIds.has(c.a) || focusedIds.has(c.b)) : false;
+        })()
+      : focusedIds.has(targetId);
+    return !srcPerson && !tgtPerson;
+  };
 
   Array.from(coupleSet.entries()).forEach(([cid, { a, b }]) => {
-    // Person A → couple
+    const dimmed = isDimmedEdge(a, cid);
+
+    // Partner A → couple midpoint
     const eA = `${a}→${cid}`;
-    if (!seenEdges.has(eA)) {
-      seenEdges.add(eA);
+    if (!seen.has(eA)) {
+      seen.add(eA);
       edges.push({
         id: eA,
         source: a,
         target: cid,
         type: "smoothstep",
-        style: { stroke: "#c8bfaf", strokeWidth: 1.5, strokeDasharray: "6 3" },
+        style: {
+          stroke: dimmed ? "#e0dbd4" : "#c8bfaf",
+          strokeWidth: dimmed ? 1 : 1.5,
+          strokeDasharray: "6 3",
+          opacity: dimmed ? 0.3 : 1,
+        },
       });
     }
-    // Person B → couple
+
+    // Partner B → couple midpoint
     const eB = `${b}→${cid}`;
-    if (!seenEdges.has(eB)) {
-      seenEdges.add(eB);
+    if (!seen.has(eB)) {
+      seen.add(eB);
       edges.push({
         id: eB,
         source: b,
         target: cid,
         type: "smoothstep",
-        style: { stroke: "#c8bfaf", strokeWidth: 1.5, strokeDasharray: "6 3" },
+        style: {
+          stroke: dimmed ? "#e0dbd4" : "#c8bfaf",
+          strokeWidth: dimmed ? 1 : 1.5,
+          strokeDasharray: "6 3",
+          opacity: dimmed ? 0.3 : 1,
+        },
       });
     }
 
-    // Couple → children
-    // Find children of this couple: persons whose parents array includes both a and b,
-    // OR persons who list a or b as parent (single-parent entries)
+    // Couple midpoint → children
     for (const person of familyData) {
       const parents = person.parents ?? [];
-      const isChildOfCouple = parents.includes(a) || parents.includes(b);
-      if (!isChildOfCouple) continue;
-
-      // Only use the couple node when BOTH parents are listed and both are in the couple
       const hasBothParents = parents.includes(a) && parents.includes(b);
-      const sourceNode = hasBothParents ? cid : parents.includes(a) ? a : b;
+      const isChildOfEither = parents.includes(a) || parents.includes(b);
+      if (!isChildOfEither) continue;
 
+      const sourceNode = hasBothParents ? cid : parents.includes(a) ? a : b;
       const eChild = `${sourceNode}→child:${person.id}`;
-      if (!seenEdges.has(eChild)) {
-        seenEdges.add(eChild);
+      if (!seen.has(eChild)) {
+        seen.add(eChild);
+        const childDimmed = isDimmedEdge(sourceNode, person.id);
         const isJan = person.side === "Jans sida";
         const isKarin = person.side === "Karins sida";
-        const strokeColor = isJan
-          ? "#4a7c5980"
+        const strokeColor = childDimmed
+          ? "#ddd8d2"
+          : isJan
+          ? "#4a7c59"
           : isKarin
-          ? "#9a7d2e80"
+          ? "#9a7d2e"
           : "#8a8078";
         edges.push({
           id: eChild,
           source: sourceNode,
           target: person.id,
           type: "smoothstep",
-          style: { stroke: strokeColor, strokeWidth: 2 },
+          style: {
+            stroke: strokeColor,
+            strokeWidth: childDimmed ? 1 : 2,
+            opacity: childDimmed ? 0.2 : 0.75,
+          },
         });
       }
     }
   });
 
-  // Also handle persons with parents but whose parents have no partner entry
+  // Direct parent→child edges where no couple node exists
   for (const person of familyData) {
-    const parents = person.parents ?? [];
-    for (const parentId of parents) {
-      // Check if this parent-child edge was already added via couple node
-      const alreadyAdded = edges.some(
+    for (const parentId of person.parents ?? []) {
+      const alreadyCovered = edges.some(
         (e) =>
           e.target === person.id &&
           (e.source === parentId ||
             coupleSet.get(e.source)?.a === parentId ||
             coupleSet.get(e.source)?.b === parentId)
       );
-      if (!alreadyAdded) {
+      if (!alreadyCovered) {
         const eid = `direct:${parentId}→${person.id}`;
-        if (!seenEdges.has(eid)) {
-          seenEdges.add(eid);
+        if (!seen.has(eid)) {
+          seen.add(eid);
+          const childDimmed = isDimmedEdge(parentId, person.id);
           const isJan = person.side === "Jans sida";
           const isKarin = person.side === "Karins sida";
           edges.push({
@@ -254,8 +332,15 @@ export function buildFullTree(rootPersonId?: string): {
             target: person.id,
             type: "smoothstep",
             style: {
-              stroke: isJan ? "#4a7c5980" : isKarin ? "#9a7d2e80" : "#8a8078",
-              strokeWidth: 2,
+              stroke: childDimmed
+                ? "#ddd8d2"
+                : isJan
+                ? "#4a7c59"
+                : isKarin
+                ? "#9a7d2e"
+                : "#8a8078",
+              strokeWidth: childDimmed ? 1 : 2,
+              opacity: childDimmed ? 0.2 : 0.75,
             },
           });
         }
@@ -263,5 +348,5 @@ export function buildFullTree(rootPersonId?: string): {
     }
   }
 
-  return { nodes, edges };
+  return { nodes, edges, focusedIds };
 }
