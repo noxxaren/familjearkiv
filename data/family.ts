@@ -11,8 +11,10 @@ export const familyData: Person[] = [
     side: "Jans sida",
     role: "Barnbarn",
     generation: 4,
+    birthDate: "2012-12-12",
+    birthYear: 2012,
     parents: ["jan-andreas-lindoff", "jan-nina-lindoff"],
-    bioShort: "Linnéa Lindoff, dotter till Andreas och Nina Lindoff.",
+    bioShort: "Linnéa Lindoff, född 12 december 2012, dotter till Andreas och Nina Lindoff.",
   },
   {
     id: "jan-lukas-lindoff",
@@ -23,8 +25,10 @@ export const familyData: Person[] = [
     side: "Jans sida",
     role: "Barnbarn",
     generation: 4,
+    birthDate: "2015-03-02",
+    birthYear: 2015,
     parents: ["jan-andreas-lindoff", "jan-nina-lindoff"],
-    bioShort: "Lukas Lindoff, son till Andreas och Nina Lindoff.",
+    bioShort: "Lukas Lindoff, född 2 mars 2015, son till Andreas och Nina Lindoff.",
   },
   {
     id: "jan-louica-lindoff",
@@ -35,8 +39,10 @@ export const familyData: Person[] = [
     side: "Jans sida",
     role: "Barnbarn",
     generation: 4,
+    birthDate: "2019-12-02",
+    birthYear: 2019,
     parents: ["jan-andreas-lindoff", "jan-nina-lindoff"],
-    bioShort: "Louica Lindoff, dotter till Andreas och Nina Lindoff.",
+    bioShort: "Louica Lindoff, född 2 december 2019, dotter till Andreas och Nina Lindoff.",
   },
   {
     id: "jan-ossian-lindoff-wiman",
@@ -47,8 +53,10 @@ export const familyData: Person[] = [
     side: "Jans sida",
     role: "Barnbarn",
     generation: 4,
+    birthDate: "2025-08-08",
+    birthYear: 2025,
     parents: ["jan-mattias-lindoff", "jan-elina-wiman"],
-    bioShort: "Ossian Lindoff Wiman, son till Mattias Lindoff och Elina Wiman.",
+    bioShort: "Ossian Lindoff Wiman, född 8 augusti 2025, son till Mattias Lindoff och Elina Wiman.",
   },
 
   // ─── Generation 3: Present ───────────────────────────────────────────────
@@ -61,10 +69,25 @@ export const familyData: Person[] = [
     side: "Jans sida",
     role: "Son",
     generation: 3,
+    birthDate: "1981-09-02",
+    birthYear: 1981,
     parents: ["jan", "karin"],
     partner: ["jan-nina-lindoff"],
     children: ["jan-linnea-lindoff", "jan-lukas-lindoff", "jan-louica-lindoff"],
-    bioShort: "Andreas Lindoff, son till Jan och Karin Lindoff. Gift med Nina Lindoff.",
+    bioShort: "Andreas Lindoff, född 2 september 1981, son till Jan och Karin Lindoff. Tog studenten 2000. Bor på Nöbbelövsgården sedan 2008. Tillsammans med Nina, tre barn.",
+    bioLong: "Andreas Lindoff föddes den 2 september 1981 som förste sonen till Jan och Karin Lindoff. Han tog studenten den 8 juni 2000. År 2003 flyttade han till morfar Lennarts gamla lägenhet på Lagerbrings väg i Lund. 2008 flyttade han till Nöbbelövsgården. År 2010 träffade han Nina. Tillsammans har de barnen Linnéa (2012), Lukas (2015) och Louica (2019).",
+    storySections: [
+      {
+        title: "Uppväxt och studier",
+        text: "Andreas Lindoff är den äldste sonen till Jan och Karin. Han tog studenten 2000 och har starka band till Nöbbelövsgården, dit han flyttade 2008.",
+      },
+    ],
+    timeline: [
+      { year: "1981", title: "Född", description: "Andreas Lindoff föds den 2 september 1981.", type: "birth" },
+      { year: "2000", title: "Studenten", description: "Tar studenten den 8 juni 2000.", type: "other" },
+      { year: "2008", title: "Flyttar till Nöbbelöv", description: "Bosätter sig på Nöbbelövsgården.", type: "move" },
+      { year: "2010", title: "Träffar Nina", description: "Andreas träffar Nina.", type: "other" },
+    ],
   },
   {
     id: "jan-nina-lindoff",
@@ -77,7 +100,7 @@ export const familyData: Person[] = [
     generation: 3,
     partner: ["jan-andreas-lindoff"],
     children: ["jan-linnea-lindoff", "jan-lukas-lindoff", "jan-louica-lindoff"],
-    bioShort: "Nina Lindoff, gift med Andreas Lindoff.",
+    bioShort: "Nina Lindoff, sambo med Andreas Lindoff. Tillsammans med Andreas tre barn: Linnéa (2012), Lukas (2015) och Louica (2019).",
   },
   {
     id: "jan-mattias-lindoff",
@@ -88,10 +111,25 @@ export const familyData: Person[] = [
     side: "Jans sida",
     role: "Son",
     generation: 3,
+    birthDate: "1984-05-24",
+    birthYear: 1984,
     parents: ["jan", "karin"],
     partner: ["jan-elina-wiman"],
     children: ["jan-ossian-lindoff-wiman"],
-    bioShort: "Mattias Lindoff, son till Jan och Karin Lindoff. Tillsammans med Elina Wiman.",
+    bioShort: "Mattias Lindoff, född 24 maj 1984, son till Jan och Karin Lindoff. Tog studenten 2003. Bor på Nöbbelövsgården sedan 2015. Tillsammans med Elina Wiman, sonen Ossian (2025).",
+    bioLong: "Mattias Lindoff föddes den 24 maj 1984 som andresonen till Jan och Karin Lindoff. Han tog studenten den 3 juni 2003. År 2009 flyttade han till Lagerbrings väg i Lund. 2015 flyttade han in på Nöbbelövsgården. Han är tillsammans med Elina Wiman och de fick sonen Ossian den 8 augusti 2025.",
+    storySections: [
+      {
+        title: "Uppväxt och familj",
+        text: "Mattias Lindoff är den yngre sonen till Jan och Karin. Han tog studenten 2003, bodde på Lagerbrings väg och flyttade sedan till Nöbbelövsgården 2015. Med Elina Wiman fick han sonen Ossian 2025.",
+      },
+    ],
+    timeline: [
+      { year: "1984", title: "Född", description: "Mattias Lindoff föds den 24 maj 1984.", type: "birth" },
+      { year: "2003", title: "Studenten", description: "Tar studenten den 3 juni 2003.", type: "other" },
+      { year: "2015", title: "Flyttar till Nöbbelöv", description: "Bosätter sig på Nöbbelövsgården.", type: "move" },
+      { year: "2025", title: "Ossian föds", description: "Sonen Ossian Lindoff Wiman föds den 8 augusti 2025.", type: "other" },
+    ],
   },
   {
     id: "jan-elina-wiman",
@@ -104,7 +142,7 @@ export const familyData: Person[] = [
     generation: 3,
     partner: ["jan-mattias-lindoff"],
     children: ["jan-ossian-lindoff-wiman"],
-    bioShort: "Elina Wiman, tillsammans med Mattias Lindoff.",
+    bioShort: "Elina Wiman, tillsammans med Mattias Lindoff. Mamma till Ossian Lindoff Wiman (2025).",
   },
   // ─── Generation 2: Parents ───────────────────────────────────────────────
   {
@@ -406,13 +444,16 @@ export const familyData: Person[] = [
     birthYear: 1951,
     parents: ["karin-maj-britt-hansson", "karin-lennart-olsson"],
     siblings: ["karin"],
-    bioShort: "Ingrid Marianne Olsson, född 1951, är Karins syster och dotter till Maj-Britt och Lennart.",
-    bioLong:
-      "Ingrid Marianne Olsson föddes 1951 som det första barnet till Maj-Britt Hansson och Lennart Olsson. Hon är Karins äldre syster.",
+    bioShort: "Ingrid Marianne Olsson, född 1951, är Karins äldre syster. Livslångt intresse för hundar och Brukshundsklubben — och det var tack vare henne som Karin och Jan möttes 1975.",
+    bioLong: "Ingrid Marianne Olsson föddes 1951 som det första barnet till Maj-Britt Hansson och Lennart Olsson. Efter moderns bortgång 1957 växte hon upp hos morföräldrarna Knut och Hilma på Lagerbrings väg i Lund, med pappan Lennart i trappuppgången bredvid. Ingrid har i hela sitt liv sysslat med hundar och var aktiv i Brukshundsklubben i Lund, där hon bland annat tävlade i lydnad. Den 20 september 1975 firade klubben 30-årsjubileum med uppvisning. Karin följde med Ingrid dit — och det var den kvällen hon fick syn på Jan Lindoff. Det var alltså tack vare Ingrids hundintresse som syskonen Lindoff bildades.",
     storySections: [
       {
-        title: "Barndom",
-        text: "Ingrid Marianne Olsson är Karins äldre syster, född 1951. Som det första barnet till Maj-Britt och Lennart kom hon att dela den svåra upplevelsen av att förlora sin mor tidigt i livet.",
+        title: "Barndom på Lagerbrings väg",
+        text: "Ingrid Marianne Olsson är Karins äldre syster, fem år äldre. Som det första barnet till Maj-Britt och Lennart förlorade hon sin mor redan som sexåring. Morföräldrarna Knut och Hilma på Lagerbrings väg gav henne och Karin ett tryggt hem.",
+      },
+      {
+        title: "Hundar och den magiska kvällen 1975",
+        text: "Ingrid har alltid älskat hundar och var aktiv i Brukshundsklubben i Lund. Den 20 september 1975 hade klubben uppvisning för sitt 30-årsjubileum. Karin följde med Ingrid dit — och fick där syn på Jan Lindoff. Utan Ingrid och hennes hundar hade Karin och Jan kanske aldrig mötts.",
       },
     ],
     timeline: [
@@ -421,6 +462,12 @@ export const familyData: Person[] = [
         title: "Född",
         description: "Ingrid Marianne Olsson föds som första barnet till Maj-Britt och Lennart.",
         type: "birth",
+      },
+      {
+        year: "1975",
+        title: "Brukshundsklubben",
+        description: "Ingrid tar med Karin till klubbens 30-årsjubileum den 20 sept — Karin träffar Jan för första gången.",
+        type: "other",
       },
     ],
   },
