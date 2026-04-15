@@ -18,6 +18,7 @@ import type { Person } from "@/types/person";
 
 export const NODE_W = 180;
 export const NODE_H = 88;
+export const HEART_NODE_SIZE = 28; // keep in sync with TreeCoupleNode.tsx
 
 // ─── Node / Edge types ────────────────────────────────────────────────────────
 
@@ -195,8 +196,15 @@ export function buildFullTree(rootPersonId?: string): {
     const posA = personPos.get(a);
     const posB = personPos.get(b);
     if (!posA || !posB) return;
-    const mx = (posA.x + posB.x) / 2 + NODE_W / 2;
-    const my = (posA.y + posB.y) / 2 + NODE_H / 2;
+    // Center of person A and B (dagre gives top-left corners)
+    const centerAx = posA.x + NODE_W / 2;
+    const centerBx = posB.x + NODE_W / 2;
+    const centerAy = posA.y + NODE_H / 2;
+    const centerBy = posB.y + NODE_H / 2;
+    // Heart badge goes at the midpoint between the two person centers,
+    // offset by half the badge size so the badge itself is centered there.
+    const mx = (centerAx + centerBx) / 2 - HEART_NODE_SIZE / 2;
+    const my = (centerAy + centerBy) / 2 - HEART_NODE_SIZE / 2;
     const dimmed =
       focusedIds !== null &&
       !focusedIds.has(a) &&
@@ -237,7 +245,7 @@ export function buildFullTree(rootPersonId?: string): {
   Array.from(coupleSet.entries()).forEach(([cid, { a, b }]) => {
     const dimmed = isDimmedEdge(a, cid);
 
-    // Partner A → couple midpoint
+    // Partner A → couple midpoint (heart badge)
     const eA = `${a}→${cid}`;
     if (!seen.has(eA)) {
       seen.add(eA);
@@ -245,17 +253,16 @@ export function buildFullTree(rootPersonId?: string): {
         id: eA,
         source: a,
         target: cid,
-        type: "smoothstep",
+        type: "straight",
         style: {
-          stroke: dimmed ? "#e0dbd4" : "#c8bfaf",
+          stroke: dimmed ? "#e4dfd8" : "#d4899a",
           strokeWidth: dimmed ? 1 : 1.5,
-          strokeDasharray: "6 3",
-          opacity: dimmed ? 0.3 : 1,
+          opacity: dimmed ? 0.2 : 0.55,
         },
       });
     }
 
-    // Partner B → couple midpoint
+    // Partner B → couple midpoint (heart badge)
     const eB = `${b}→${cid}`;
     if (!seen.has(eB)) {
       seen.add(eB);
@@ -263,12 +270,11 @@ export function buildFullTree(rootPersonId?: string): {
         id: eB,
         source: b,
         target: cid,
-        type: "smoothstep",
+        type: "straight",
         style: {
-          stroke: dimmed ? "#e0dbd4" : "#c8bfaf",
+          stroke: dimmed ? "#e4dfd8" : "#d4899a",
           strokeWidth: dimmed ? 1 : 1.5,
-          strokeDasharray: "6 3",
-          opacity: dimmed ? 0.3 : 1,
+          opacity: dimmed ? 0.2 : 0.55,
         },
       });
     }
